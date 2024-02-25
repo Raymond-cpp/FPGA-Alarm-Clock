@@ -1,0 +1,10 @@
+
+
+# ignore the hw directory
+Digital_Alarm_Clock.hw/*
+
+# ignore the runs directory
+Digital_Alarm_Clock.runs/*
+
+# ignore the cache directory
+Digital_Alarm_Clock.cache/*
