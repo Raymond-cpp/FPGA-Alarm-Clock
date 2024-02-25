@@ -11,7 +11,7 @@
 // Tool Versions: Xilinx Vivado 2018.1
 // Description: This clock manager intakes a 100 MHz clock and outputs a 100 Hz clock
 // 
-// Dependencies: 
+// Dependencies: None
 // 
 // Revision:
 // Revision 0.01 - File Created
@@ -29,7 +29,7 @@ module clk_manager (
 
     reg toggle_clk = 0;
     reg [19:0] clk_counter = 20'b00000000000000000000;
-    reg [19:0] max_value  =  20'b01111010000100100000; // 500000
+    reg [19:0] max_value  =  20'd500000;
     
     always @ (posedge clk_in) begin
         if (clk_counter >= max_value) begin

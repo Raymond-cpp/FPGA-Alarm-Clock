@@ -1,17 +1,17 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
 // Company: 
-// Engineer: 
+// Engineer: R. Wong
 // 
 // Create Date: 01/12/2024 05:48:48 PM
 // Design Name: 
 // Module Name: alarm
-// Project Name: 
-// Target Devices: 
+// Project Name: Digital Alarm Clock
+// Target Devices: Nexys A7
 // Tool Versions: 
 // Description: 
 // 
-// Dependencies: 
+// Dependencies: None
 // 
 // Revision:
 // Revision 0.01 - File Created
@@ -30,14 +30,10 @@ module alarm(
     input en,
     input rst,
     input rst_match_flag,
+    input load,
     
-    // trial: directly taking in board inputs
     input [1:0] selected_digit,
     input [3:0] bcd_switches,
-    
-    input load,
-//    input [6:0] load_hour,
-//    input [6:0] load_minute,
     
     output [4:0] alarm_hour,
     output [5:0] alarm_minute,
@@ -51,9 +47,7 @@ module alarm(
     wire hour_match = (internal_hour == current_hour);
     wire minute_match = (internal_minute == current_minute);
     
-    reg [7:0] current_bcd_value = 8'b00000000;
-    reg [6:0] load_register = 7'b0000000;
-    
+    // used for detecting when the BCD switches position has changed
     reg [3:0] prev_bcd = 4'b0000;
     wire bcd_changed = (prev_bcd != bcd_switches);
     
@@ -64,6 +58,7 @@ module alarm(
         .bcd(bcd_minute)
     );
     
+    // alters the minute based on which digit is being edited
     wire [5:0] modified_minute = 
         selected_digit == 2'b10 ? 
             (bcd_switches > 4'd5 ? 4'd5 : bcd_switches)*4'd10 + bcd_minute[3:0] :
@@ -81,8 +76,6 @@ module alarm(
                 internal_hour = (bcd_switches >= 4'd12) ? 0 : bcd_switches;
             else if (selected_digit > 2'b01)
                 internal_minute = modified_minute;
-//            internal_hour = load_hour[4:0];
-//            internal_minute = load_minute[5:0];
         end else if (en & hour_match & minute_match /*& (internal_am_pm == current_am_pm)*/) begin // TODO re-enable eventually
             internal_match_flag = 1'b1;
         end

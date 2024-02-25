@@ -38,7 +38,7 @@ module top(
     output am_pm_led,
     output [3:0] switch_leds,
     output edit_led
-    );
+);
     
     reg edit_mode = 1'b0; // HIGH when editing time or alarm
     reg [3:0] edit_alarm = 4'b0000;
@@ -132,25 +132,30 @@ module top(
         
     end
     
+    // input debouncers
     debouncer debounce_sel(
         .clk(sys_clk),
         .in(sel_btn),
-        .rise(sel_triggered)
+        .rise(sel_triggered),
+        .out(), .edj(), .fall() // silences warnings
     );
     debouncer debounce_left(
         .clk(sys_clk),
         .in(left_btn),
-        .rise(left_triggered)
+        .rise(left_triggered),
+        .out(), .edj(), .fall() // silences warnings
     );
     debouncer debounce_right(
         .clk(sys_clk),
         .in(right_btn),
-        .rise(right_triggered)
+        .rise(right_triggered),
+        .out(), .edj(), .fall() // silences warnings
     );
     debouncer debounce_snooze(
         .clk(sys_clk),
         .in(snooze_btn),
-        .rise(snooze_triggered)
+        .rise(snooze_triggered),
+        .out(), .edj(), .fall() // silences warnings
     );
     
     // setup time editor for loading a time
@@ -167,12 +172,13 @@ module top(
     );
     
     // setup time unit counters
-    counter millis( // this is actually a 10 ms counter, but ms is shorter
+    counter millis( // technically a 10 ms counter, but "clk_ms" is shorter
         .clk(ms_clk),
         .rst(sys_rst | sec_rst),
         .en(sys_en),
         .max_value(7'd100),
         .load(1'b0),
+        .load_value(), // silences warning
         .out(time_ms),
         .overflow(overflow_ms)
     );
@@ -183,6 +189,7 @@ module top(
         .en(sys_en),
         .max_value(7'd60),
         .load(1'b0),
+        .load_value(), // silences warning
         .out(time_sec),
         .overflow(overflow_sec)
     );
@@ -197,6 +204,7 @@ module top(
         .out(time_min),
         .overflow(overflow_min)
     );
+    
     counter hours(
         .clk(hour_clk),
         .rst(sys_rst),
@@ -216,17 +224,8 @@ module top(
     generate
         genvar i;
         for (i = 0; i < 4; i = i + 1) begin
-            wire alm_load_hour;
-            wire alm_load_min;
-            wire [6:0] alm_load_value;
             wire [3:0] alm_hour_pre_bcd;
-            wire [3:0] iBus = (
-                i == 0 ? 4'b0001 :
-                i == 1 ? 4'b0010 :
-                i == 2 ? 4'b0100 :
-                i == 3 ? 4'b1000 :
-                4'b0000
-            );
+            wire [3:0] iBus = 4'b0001 << i;
             wire editor_active = edit_mode & (edit_alarm == iBus);
             
             binary_bcd_converter bcd_alm_min (
@@ -241,23 +240,6 @@ module top(
             
             assign alm_hour_bcd[i] = (alm_hour_pre_bcd == 4'h0) ? 8'b00010010 : alm_hour_pre_bcd;
             
-            // TODO remove since we don't use time_editor to edit the alarm anymore
-//            time_editor alm_editor(
-//                // in
-//                .clk(sys_clk),
-//                .en(editor_active),
-//                .current_hour(alm_hour[i]),
-//                .current_minute_bcd(alm_min_bcd[i]),
-//                .bcd_in(bcd_switches),
-//                .toggle_am_pm(snooze_triggered & (edit_alarm == iBus)),
-//                .selected_digit(selected_digit),
-                
-//                // out
-//                .load_hour(alm_load_hour),
-//                .load_minute(alm_load_min),
-//                .load_value(alm_load_value)
-//            );
-            
             alarm alm(
                 // in
                 .sys_clk(ms_clk),
@@ -266,13 +248,9 @@ module top(
                 .current_am_pm(am_pm),
                 .toggle_am_pm(snooze_triggered),
                 .load(editor_active),
-//                .load_hour(alm_load_hour ? alm_load_value : alm_hour[i]),
-//                .load_minute(alm_load_min ? alm_load_value : alm_min[i]),
                 .en(bcd_switches[i] && time_sec < 1),
                 .rst(sys_rst),
                 .rst_match_flag(snooze_btn),
-                
-                // trial in
                 .selected_digit(selected_digit),
                 .bcd_switches(bcd_switches),
                 
@@ -291,19 +269,14 @@ module top(
         .bin(time_ms),
         .bcd(bcd_ms)
     );
-            
-    // for converting binary values into bcd for display
     binary_bcd_converter bcd_sec_conv(
         .bin(time_sec),
         .bcd(bcd_sec)
     );
-      
-    // for converting binary values into bcd for display
     binary_bcd_converter bcd_min_conv(
         .bin(time_min),
         .bcd(bcd_min)
     );
-    
     wire [7:0] bcd_hour_ssd;
     binary_bcd_converter bcd_hour_ssd_conv(
         .bin((time_hour == 7'b0000000 | time_hour > 4'b1100) ? 4'b1100 : time_hour),

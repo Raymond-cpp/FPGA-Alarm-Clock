@@ -1,17 +1,17 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
 // Company: 
-// Engineer: 
+// Engineer: R. Wong
 // 
 // Create Date: 01/13/2024 12:08:51 AM
 // Design Name: 
 // Module Name: time_editor
-// Project Name: 
+// Project Name: Digital Alarm Clock
 // Target Devices: 
 // Tool Versions: 
 // Description: 
 // 
-// Dependencies: 
+// Dependencies: None
 // 
 // Revision:
 // Revision 0.01 - File Created
@@ -53,7 +53,7 @@ module time_editor(
                 );
             end
             
-            // this line converts BCD to binary
+            // converts BCD to binary
             if (load_hour | load_minute) load_register = (current_bcd_value[7:4]*4'd10) + current_bcd_value[3:0];
             
         end
