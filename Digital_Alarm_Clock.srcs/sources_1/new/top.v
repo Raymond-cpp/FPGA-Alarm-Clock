@@ -30,7 +30,7 @@ module top(
     input snooze_btn,
     input [3:0] bcd_switches, // used for BCD input or enabling alarms
     
-    output [3:0] TEMP_ALM_DEBUG,
+    output [3:0] alarm_active,
     
     output [6:0] ssd_cc,
     output ssd_dp,
@@ -49,6 +49,7 @@ module top(
     wire ms_clk;
     wire ssd_clk;
     reg hour_clk;
+    wire flashing_alm_clk;
     
     wire [6:0] time_ms;
     wire overflow_ms;
@@ -68,6 +69,8 @@ module top(
     
     wire [3:0] alarm_match;
     wire blink = time_ms < 50;
+    
+    assign flashing_alm_clk = (time_ms < 25) || (time_ms < 75 && time_ms > 50);
     
     wire sel_triggered, left_triggered, right_triggered, snooze_triggered;
             
@@ -239,21 +242,21 @@ module top(
             assign alm_hour_bcd[i] = (alm_hour_pre_bcd == 4'h0) ? 8'b00010010 : alm_hour_pre_bcd;
             
             // TODO remove since we don't use time_editor to edit the alarm anymore
-            time_editor alm_editor(
-                // in
-                .clk(sys_clk),
-                .en(editor_active),
-                .current_hour(alm_hour[i]),
-                .current_minute_bcd(alm_min_bcd[i]),
-                .bcd_in(bcd_switches),
+//            time_editor alm_editor(
+//                // in
+//                .clk(sys_clk),
+//                .en(editor_active),
+//                .current_hour(alm_hour[i]),
+//                .current_minute_bcd(alm_min_bcd[i]),
+//                .bcd_in(bcd_switches),
 //                .toggle_am_pm(snooze_triggered & (edit_alarm == iBus)),
-                .selected_digit(selected_digit),
+//                .selected_digit(selected_digit),
                 
-                // out
-                .load_hour(alm_load_hour),
-                .load_minute(alm_load_min),
-                .load_value(alm_load_value)
-            );
+//                // out
+//                .load_hour(alm_load_hour),
+//                .load_minute(alm_load_min),
+//                .load_value(alm_load_value)
+//            );
             
             alarm alm(
                 // in
@@ -263,9 +266,9 @@ module top(
                 .current_am_pm(am_pm),
                 .toggle_am_pm(snooze_triggered),
                 .load(editor_active),
-                .load_hour(alm_load_hour ? alm_load_value : alm_hour[i]),
-                .load_minute(alm_load_min ? alm_load_value : alm_min[i]),
-                .en(bcd_switches[i]),
+//                .load_hour(alm_load_hour ? alm_load_value : alm_hour[i]),
+//                .load_minute(alm_load_min ? alm_load_value : alm_min[i]),
+                .en(bcd_switches[i] && time_sec < 1),
                 .rst(sys_rst),
                 .rst_match_flag(snooze_btn),
                 
@@ -278,6 +281,8 @@ module top(
                 .alarm_minute(alm_min[i]),
                 .match_flag(alarm_match[i])
             );
+            assign alarm_active[i] = alarm_match[i] & flashing_alm_clk;
+            
         end
     endgenerate
     
@@ -340,8 +345,5 @@ module top(
     assign switch_leds = edit_alarm > 0 ? edit_alarm & {4{blink}} : bcd_switches;
     assign edit_led = edit_mode & blink;
     assign am_pm_led = am_pm;
-    
-    // TODO remove when done
-    assign TEMP_ALM_DEBUG = alm_hour[0];
     
 endmodule

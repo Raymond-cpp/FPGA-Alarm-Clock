@@ -36,8 +36,8 @@ module alarm(
     input [3:0] bcd_switches,
     
     input load,
-    input [6:0] load_hour,
-    input [6:0] load_minute,
+//    input [6:0] load_hour,
+//    input [6:0] load_minute,
     
     output [4:0] alarm_hour,
     output [5:0] alarm_minute,
@@ -83,7 +83,7 @@ module alarm(
                 internal_minute = modified_minute;
 //            internal_hour = load_hour[4:0];
 //            internal_minute = load_minute[5:0];
-        end else if (en & hour_match & minute_match & (internal_am_pm == current_am_pm)) begin
+        end else if (en & hour_match & minute_match /*& (internal_am_pm == current_am_pm)*/) begin // TODO re-enable eventually
             internal_match_flag = 1'b1;
         end
         
