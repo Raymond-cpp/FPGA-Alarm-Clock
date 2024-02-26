@@ -36,3 +36,9 @@ The following outputs of the Nexys A7 are used to express the clock's current st
 - Binary -> BCD Converter (binary_bcd.v)
 - Seven-Segment Display Driver (ssd_driver.v)
 - Button Debouncer (debouncer.v)
+
+## References
+The resources linked below were used when creating this project.
+- Input debouncer - [Electrical Engineering Stack Exchange](https://electronics.stackexchange.com/questions/505911/debounce-circuit-design-in-verilog)
+- Binary to BCD converter - [RealDigital](https://www.realdigital.org/doc/6dae6583570fd816d1d675b93578203d)
+- Nexys A7 100T Constraints - [Digilient on GitHub](https://github.com/Digilent/Nexys-A7-100T-Keyboard/blob/master/src/constraints/Nexys-A7-100T-Master.xdc)
