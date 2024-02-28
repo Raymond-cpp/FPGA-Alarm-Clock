@@ -1,5 +1,5 @@
 # FPGA-Alarm-Clock
-A Verilog-based digital alarm clock implemented on the Nexys A7 FPGA board.
+A Verilog-based digital alarm clock implemented on a Nexys A7 FPGA board.
 
 
 ## Input/Outputs
@@ -54,16 +54,16 @@ In all states, `EN` and `RST` will always have the same effect (described in I/O
 ## Modules
 
 ### Topfile (top.v)
-// TODO
+The top module containing all other modules in this project. This file establishes all inputs, outputs, and handles all small-scale logical operations necessary for manipulating inputs for other modules. A counter module is created for each time register (hours, minutes, seconds, 10-milliseconds) and relies on the clock manager to trigger the 10ms clock to update the 10ms register. Each counter thereafter relies on the overflow signal of the lesser counter.
 
 ### Counter (counter.v)
-// TODO
+A simple module dedicated to counting an internal value and determining when to perform a controlled overflow - resetting the internal value to 0 and setting the overflow output signal to HIGH for one clock cycle.
 
 ### Alarm (alarm.v)
-// TODO
+A module which waits for the current (externally passed) hour and minutes to match an internal hour and minute register, which can be set by setting the LOAD input signal to HIGH. Once the current hour and minute match the internal registers, an alarm_match signal is set to high and can be reset using the reset_alarm_match.
 
 ### Time Editor (time_editor.v)
-// TODO
+A module determines the new values for the hour and minute based on the currently selected digit and the position of the BCD switches, which are connected as inputs from the top module.
 
 ### Other modules
 - Clock manager (clk_manager.v)
